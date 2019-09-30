@@ -3,16 +3,26 @@ const http = require('http')
 const path = require('path') // use it to serve up a public directory
 const socketio = require('socket.io')
 const moment = require("moment")
+const userRouter = require('./routers/user')
+const taskRouter = require('../src/routers/task')
+require('./db/mongoose')
 const { addUser, removeUser, getUser, getUsersInRoom } = require('./utils/users')
-
+var corsOptions = {
+    origin: 'http://localhost:4200',
+    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+  }
 const app = express()
 const server = http.createServer(app) // express does it already but we do this to use socket.io
 const io = socketio(server) // socketio needs the raw http server, when express creates it behind the scene we dont have access to i
 
 app.use(express.json())
-const port = process.env.PORT || 3000 //process.env.PORT 
+
+const port = process.env.PORT || 3000 //process.env.PORT  // je viens d'automatiser les variables d'environnment|| 3000 //quand heroku voudra mettre deployer sur le port 80 ca sera automatiques sinn il prend 3000
 const publicDirectoryPath = path.join(__dirname, '../public/')
 app.use(express.static(publicDirectoryPath)) // we link it to the public folder
+app.use(express.json()) //parse incoming json into object
+app.use(userRouter) //c'est comme ca qu'on utilise les routeurs à la racine de l'app
+app.use(taskRouter)
 
 // app.use(router)
 generateMessage = (username, message) => {
@@ -71,3 +81,9 @@ io.on('connection', (socket) => {   // it was app.listen before
 server.listen(port, () => {   // it was app.listen before
     console.log("server is up on port ", port);
 })
+
+
+
+
+
+
