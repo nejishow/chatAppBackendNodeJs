@@ -2,6 +2,7 @@ const express = require('express')
 const http = require('http')
 const path = require('path') // use it to serve up a public directory
 const socketio = require('socket.io')
+const cors = require("cors")
 const moment = require("moment")
 const userRouter = require('./routers/user')
 const taskRouter = require('../src/routers/task')
@@ -23,6 +24,8 @@ app.use(express.static(publicDirectoryPath)) // we link it to the public folder
 app.use(express.json()) //parse incoming json into object
 app.use(userRouter) //c'est comme ca qu'on utilise les routeurs à la racine de l'app
 app.use(taskRouter)
+app.options('http://localhost:4200/', cors()) // include before other routes
+
 
 // app.use(router)
 generateMessage = (username, message) => {
