@@ -15,6 +15,10 @@ const userSchema = new mongoose.Schema(
             required: true,
             trim: true
         },
+        searchName: {
+            type: String,
+            trim: true
+        },
         email: {
             type: String,
             required: true,
@@ -54,6 +58,22 @@ const userSchema = new mongoose.Schema(
                 required: true
             }
         }],
+        friends: [{
+            _id: {
+                type: String,
+            },
+            status : {
+                type:String
+            }
+        }],
+        request: [{
+            _id: {
+                type: String,
+            },
+            status : {
+                type:String
+            }
+        }],
         avatar: {
             type: Buffer
         },
@@ -66,6 +86,7 @@ userSchema.virtual('tasks', { //creer une liaison virtuelle, les donnees ne sont
     localField: '_id', //la reference _id dans cette db equivaut à owner dans la db des tasks
     foreignField: 'owner'
 })
+
 
 userSchema.statics.findByCredentials = async (email, password) => {  // userSchema.statics te permet de creer des fonctions utilisables depuis le model respectif dans notre cas "Users"
     const user = await User.findOne({ email })

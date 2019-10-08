@@ -17,14 +17,24 @@ const server = http.createServer(app) // express does it already but we do this 
 const io = socketio(server) // socketio needs the raw http server, when express creates it behind the scene we dont have access to i
 
 app.use(express.json())
+app.options('*', cors(corsOptions)) // include before other routes
 
 const port = process.env.PORT || 3000 //process.env.PORT  // je viens d'automatiser les variables d'environnment|| 3000 //quand heroku voudra mettre deployer sur le port 80 ca sera automatiques sinn il prend 3000
 const publicDirectoryPath = path.join(__dirname, '../public/')
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-Width, Content-Type, Accept,Authorization");
+    res.header('Access-Control-Allow-Methods', 'PATCH','PUT, POST, GET, DELETE, OPTIONS');
+    if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+    } else {
+        next();
+    }  });
 app.use(express.static(publicDirectoryPath)) // we link it to the public folder
 app.use(express.json()) //parse incoming json into object
+
 app.use(userRouter) //c'est comme ca qu'on utilise les routeurs à la racine de l'app
 app.use(taskRouter)
-app.options('http://localhost:4200/', cors()) // include before other routes
 
 
 // app.use(router)
