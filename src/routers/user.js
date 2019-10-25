@@ -1,6 +1,6 @@
 const express = require('express')
 const router = new express.Router()
-const cors = require("cors")
+const Rooms = require('../db/models/room')
 const Users = require("../db/models/users")
 const auth = require('../middleware/auth')
 const multer = require('multer')
@@ -128,7 +128,13 @@ router.patch('/users/friendRequest', auth, async (req, res) => {  //friendship r
         res.status(500).send({ "error": "Oups une erreur est survenue veuillez reesseyer" })
     }
 })
+router.patch('/users/deleteFriend', auth, async (req, res) => {
+    await Users.findByIdAndUpdate(req.body.id, { $pull: { friends: { _id: req.user._id, status: "friend" } } })
+    // change request and friend status from the receiver
+    await Users.findByIdAndUpdate(req.user._id, { $pull: { request: { _id: req.body.id, status: "friend" } } })
 
+    res.status(201).send()
+})
 router.patch('/users/answerRequest', auth, async (req, res) => {  //friendship request
 
     try {
@@ -139,7 +145,23 @@ router.patch('/users/answerRequest', auth, async (req, res) => {  //friendship r
             // change request and friend status from the receiver
             await Users.findByIdAndUpdate(req.user._id, { $push: { friends: { _id: req.body.id, status: "friend" } } })
             await Users.findByIdAndUpdate(req.user._id, { $pull: { request: { _id: req.body.id, status: "pending" } } })
-            res.status(201).send()
+            const friend = await Users.findById(req.body.id)
+            const body = {
+                '_id': req.body.id + req.user_id,
+                "name": req.user.name +'&'+ friend.name,
+                "people": [
+                    {
+                        "_id": req.body.id
+                    },
+                    {
+                        "_id": req.user._id
+                    }
+                ],
+                "status": true
+            }
+            const room = new Rooms(body)
+            await room.save()
+            res.status(201).send(room)
         } else {
             //change friend status from sender
             await Users.findByIdAndUpdate(req.body.id, { $pull: { friends: { _id: req.user._id, status: "pending" } } })

@@ -3,6 +3,7 @@ const validator = require('validator')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const Tasks = require('../models/tasks')
+const Chats = require('../models/chat')
 const userSchema = new mongoose.Schema(
     {
         name: {
@@ -81,11 +82,21 @@ const userSchema = new mongoose.Schema(
         timestamps: true
     })
 
-userSchema.virtual('tasks', { //creer une liaison virtuelle, les donnees ne sont pas save dans la db,
-    ref: 'Tasks',
-    localField: '_id', //la reference _id dans cette db equivaut à owner dans la db des tasks
-    foreignField: 'owner'
-})
+    userSchema.virtual('tasks', { //creer une liaison virtuelle, les donnees ne sont pas save dans la db,
+        ref: 'Tasks',
+        localField: '_id', //la reference _id dans cette db equivaut à owner dans la db des tasks
+        foreignField: 'owner'
+    })
+    userSchema.virtual('chats', { //creer une liaison virtuelle, les donnees ne sont pas save dans la db,
+        ref: 'Chats',
+        localField: '_id', //la reference _id dans cette db equivaut à owner dans la db des tasks
+        foreignField: 'sentBy'
+    })
+    userSchema.virtual('chats', { //creer une liaison virtuelle, les donnees ne sont pas save dans la db,
+        ref: 'Chats',
+        localField: '_id', //la reference _id dans cette db equivaut à owner dans la db des tasks
+        foreignField: 'receivedBy'
+    })
 
 
 userSchema.statics.findByCredentials = async (email, password) => {  // userSchema.statics te permet de creer des fonctions utilisables depuis le model respectif dans notre cas "Users"
@@ -124,6 +135,7 @@ userSchema.methods.toJSON = function () {  //ca filtre les donnees retournees vi
 userSchema.pre('remove', async function (next) {
     const user = this
     await Tasks.deleteMany({ owner: user._id })
+    await Chats.deleteMany({ sentBy: user._id })
 
     next()
 })
